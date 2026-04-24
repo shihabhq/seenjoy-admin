@@ -25,7 +25,7 @@ export default async function RegistrationsPage() {
         title="Registrations"
         description={`${orders.length} total registrations`}
       />
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
         <RegistrationsTable orders={orders} />
       </main>
     </>

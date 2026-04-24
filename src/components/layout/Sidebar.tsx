@@ -10,6 +10,7 @@ import {
   LogOut,
   GraduationCap,
   Tag,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -30,7 +31,12 @@ const navItems = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -42,13 +48,23 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 h-full flex flex-col bg-[#0D0D14] border-r border-[#1E1E2A]">
+    <aside
+      className={cn(
+        "w-64 flex flex-col bg-[#0D0D14] border-r border-[#1E1E2A] transition-transform duration-300 ease-in-out",
+        // Mobile: fixed overlay, slides in/out
+        "fixed inset-y-0 left-0 z-50 h-full",
+        // Desktop: static in flex flow, always visible
+        "lg:static lg:translate-x-0 lg:z-auto",
+        // Mobile open/close toggle
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}
+    >
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-[#1E1E2A]">
-        <div className="w-8 h-8 rounded-lg bg-[#20b2aa]/15 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-[#20b2aa]/15 flex items-center justify-center shrink-0">
           <GraduationCap className="w-4.5 h-4.5 text-[#20b2aa]" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[#F0F0F5] leading-none">
             Seenjoy
           </p>
@@ -56,6 +72,14 @@ export function Sidebar() {
             Admin Dashboard
           </p>
         </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="lg:hidden w-7 h-7 flex items-center justify-center rounded-md text-[#6B7280] hover:text-[#F0F0F5] hover:bg-[#1A1A24] transition-colors shrink-0"
+          aria-label="Close sidebar"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -70,6 +94,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group",
                 isActive

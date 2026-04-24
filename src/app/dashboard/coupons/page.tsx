@@ -25,7 +25,7 @@ export default async function CouponsPage() {
         title="Coupons"
         description="Create and manage discount coupon codes"
       />
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold text-[#F0F0F5]">Coupon Codes</h2>
