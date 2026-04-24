@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  name           String
+  email          String
+  phone          String
+  courseName     String      @default("Speak To Win")
+  amount         Float
+  currency       String      @default("BDT")
+  status         OrderStatus @default(PENDING)
+  transactionId  String?     @unique
+  sslSessionKey  String?
+  paymentMethod  String?
+  emailSent      Boolean     @default(false)
+  couponCode     String?
+  discountAmount Float       @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Coupon {
+  id        String     @id @default(cuid())
+  code      String     @unique
+  type      CouponType
+  value     Float
+  maxUses   Int?
+  usedCount Int        @default(0)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum CouponType {
+  PERCENTAGE
+  AMOUNT
+}
