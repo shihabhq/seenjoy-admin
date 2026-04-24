@@ -6,16 +6,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Shift a UTC timestamp to Bangladesh Standard Time (UTC+6) for display. */
+function toBDT(date: string | Date): Date {
+  const utcMs = new Date(date).getTime();
+  return new Date(utcMs + 6 * 60 * 60 * 1000);
+}
+
 export function formatDate(date: string | Date): string {
-  return format(new Date(date), "dd MMM yyyy, hh:mm a");
+  return format(toBDT(date), "dd MMM yyyy, hh:mm a");
 }
 
 export function formatDateShort(date: string | Date): string {
-  return format(new Date(date), "dd MMM yyyy");
+  return format(toBDT(date), "dd MMM yyyy");
 }
 
 export function formatRelativeTime(date: string | Date): string {
-  return formatDistanceToNow(new Date(date), { addSuffix: true });
+  return formatDistanceToNow(toBDT(date), { addSuffix: true });
 }
 
 export function formatCurrency(amount: number, currency = "BDT"): string {
