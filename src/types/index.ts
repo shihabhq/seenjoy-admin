@@ -14,6 +14,7 @@ export interface Order {
   sslSessionKey: string | null;
   paymentMethod: string | null;
   emailSent: boolean;
+  whatsappAdded: boolean;
   couponCode: string | null;
   discountAmount: number;
   createdAt: string;

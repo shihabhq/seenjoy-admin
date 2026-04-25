@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import type { Order, OrderStatus } from "@/types";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -31,12 +32,43 @@ interface RegistrationsTableProps {
 }
 
 export function RegistrationsTable({ orders }: RegistrationsTableProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | OrderStatus>("");
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState<keyof Order>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [whatsappState, setWhatsappState] = useState<Record<string, boolean>>({});
+  const [toggling, setToggling] = useState<Record<string, boolean>>({});
+
+  function isWhatsappAdded(order: Order): boolean {
+    return order.id in whatsappState ? whatsappState[order.id] : order.whatsappAdded;
+  }
+
+  async function toggleWhatsapp(e: React.MouseEvent, order: Order) {
+    e.stopPropagation();
+    if (toggling[order.id]) return;
+
+    const next = !isWhatsappAdded(order);
+    setWhatsappState((s) => ({ ...s, [order.id]: next }));
+    setToggling((s) => ({ ...s, [order.id]: true }));
+
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsappAdded: next }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      router.refresh();
+    } catch {
+      // revert on failure
+      setWhatsappState((s) => ({ ...s, [order.id]: !next }));
+    } finally {
+      setToggling((s) => ({ ...s, [order.id]: false }));
+    }
+  }
 
   const filtered = useMemo(() => {
     let result = [...orders];
@@ -98,6 +130,7 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
       "Transaction ID": o.transactionId ?? "",
       "Payment Method": o.paymentMethod ?? "",
       "Email Sent": o.emailSent ? "Yes" : "No",
+      "WhatsApp Added": o.whatsappAdded ? "Yes" : "No",
       "Registration Date": formatDate(o.createdAt),
     }));
     exportToCSV(data, `seenjoy-registrations-${new Date().toISOString().slice(0, 10)}`);
@@ -195,13 +228,16 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                 <th className="text-left px-4 py-3 hidden sm:table-cell">
                   <SortHeader label="Date" field="createdAt" />
                 </th>
+                <th className="text-left px-4 py-3">
+                  <span className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider">WhatsApp</span>
+                </th>
                 <th className="w-8 px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {pageOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-16 text-[#6B7280]">
+                  <td colSpan={9} className="text-center py-16 text-[#6B7280]">
                     No registrations found
                   </td>
                 </tr>
@@ -215,7 +251,11 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                           expandedRow === order.id ? null : order.id
                         )
                       }
-                      className="border-b border-[#1A1A24] hover:bg-[#1A1A24]/60 transition-colors cursor-pointer"
+                      className={`border-b border-[#1A1A24] transition-colors cursor-pointer ${
+                        order.status === "PAID" && isWhatsappAdded(order)
+                          ? "bg-emerald-950/40 hover:bg-emerald-950/60"
+                          : "hover:bg-[#1A1A24]/60"
+                      }`}
                     >
                       <td className="px-4 py-3.5 text-xs text-[#6B7280]">
                         {(currentPage - 1) * PAGE_SIZE + idx + 1}
@@ -269,6 +309,35 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                           {formatDate(order.createdAt)}
                         </span>
                       </td>
+                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                        {order.status === "PAID" ? (
+                          toggling[order.id] ? (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 animate-spin text-[#20b2aa]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                              </svg>
+                              <span className="text-xs text-[#6B7280]">Saving…</span>
+                            </div>
+                          ) : (
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={isWhatsappAdded(order)}
+                                disabled={toggling[order.id]}
+                                onChange={() => {}}
+                                onClick={(e) => toggleWhatsapp(e, order)}
+                                className="w-4 h-4 rounded accent-emerald-500 cursor-pointer disabled:opacity-50"
+                              />
+                              <span className={`text-xs ${isWhatsappAdded(order) ? "text-emerald-400" : "text-[#6B7280]"}`}>
+                                {isWhatsappAdded(order) ? "Added" : "Pending"}
+                              </span>
+                            </label>
+                          )
+                        ) : (
+                          <span className="text-xs text-[#3A3A4A]">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3.5 text-[#6B7280]">
                         <ChevronLeft
                           className={`w-4 h-4 transition-transform ${
@@ -279,7 +348,7 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                     </tr>
                     {expandedRow === order.id && (
                       <tr key={`${order.id}-expanded`} className="bg-[#0D0D14]">
-                        <td colSpan={8} className="px-6 py-4">
+                        <td colSpan={9} className="px-6 py-4">
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
                             <div>
                               <p className="text-[#6B7280] mb-1">Order ID</p>

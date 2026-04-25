@@ -20,6 +20,7 @@ model Order {
   sslSessionKey  String?
   paymentMethod  String?
   emailSent      Boolean     @default(false)
+  whatsappAdded  Boolean     @default(false)
   couponCode     String?
   discountAmount Float       @default(0)
   createdAt      DateTime    @default(now())
