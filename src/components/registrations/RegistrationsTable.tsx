@@ -229,7 +229,7 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                   <SortHeader label="Date" field="createdAt" />
                 </th>
                 <th className="text-left px-4 py-3">
-                  <span className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Facebook & Whatsapp</span>
+                  <span className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Whatsapp</span>
                 </th>
                 <th className="w-8 px-4 py-3" />
               </tr>
