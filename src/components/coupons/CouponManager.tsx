@@ -202,6 +202,9 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
                     <span className="font-mono text-sm font-semibold text-[#20b2aa]">
                       {coupon.code}
                     </span>
+                    <p className="md:hidden text-xs text-[#6B7280] mt-0.5">
+                      {coupon.usedCount} / {coupon.maxUses !== null ? coupon.maxUses : "∞"} uses
+                    </p>
                   </td>
                   <td className="px-4 py-3.5 hidden sm:table-cell">
                     <span className="text-sm text-[#F0F0F5]">
