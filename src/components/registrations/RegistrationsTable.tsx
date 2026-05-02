@@ -391,6 +391,23 @@ export function RegistrationsTable({ orders }: RegistrationsTableProps) {
                               </p>
                             </div>
                             <div>
+                              <p className="text-[#6B7280] mb-1">Coupon Code</p>
+                              {order.couponCode ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-[#20b2aa] bg-[#20b2aa]/10 px-2 py-0.5 rounded border border-[#20b2aa]/20">
+                                    {order.couponCode}
+                                  </span>
+                                  {order.discountAmount > 0 && (
+                                    <span className="text-emerald-400">
+                                      −{formatCurrency(order.discountAmount, order.currency)}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-[#6B7280]">—</p>
+                              )}
+                            </div>
+                            <div>
                               <p className="text-[#6B7280] mb-1">Last Updated</p>
                               <p className="text-[#F0F0F5]">
                                 {formatDate(order.updatedAt)}
