@@ -12,13 +12,26 @@ export async function GET() {
   const { supabase, user } = await requireAuth();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabase
-    .from("Coupon")
-    .select("*")
-    .order("createdAt", { ascending: false });
+  const [couponsResult, paidOrdersResult] = await Promise.all([
+    supabase.from("Coupon").select("*").order("createdAt", { ascending: false }),
+    supabase.from("Order").select("couponCode").eq("status", "PAID").not("couponCode", "is", null),
+  ]);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  if (couponsResult.error) return NextResponse.json({ error: couponsResult.error.message }, { status: 500 });
+
+  const paidCountMap: Record<string, number> = {};
+  for (const order of paidOrdersResult.data ?? []) {
+    if (order.couponCode) {
+      paidCountMap[order.couponCode] = (paidCountMap[order.couponCode] ?? 0) + 1;
+    }
+  }
+
+  const enriched = (couponsResult.data ?? []).map((coupon) => ({
+    ...coupon,
+    paidUsedCount: paidCountMap[coupon.code] ?? 0,
+  }));
+
+  return NextResponse.json(enriched);
 }
 
 export async function POST(request: NextRequest) {

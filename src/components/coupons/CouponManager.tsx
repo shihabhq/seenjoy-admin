@@ -55,7 +55,7 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
       return;
     }
 
-    setCoupons((prev) => [data, ...prev]);
+    setCoupons((prev) => [{ ...data, paidUsedCount: 0 }, ...prev]);
     setForm({ code: "", type: "PERCENTAGE", value: "", maxUses: "" });
     setCreating(false);
     setSubmitting(false);
@@ -79,7 +79,7 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
 
     if (res.ok) {
       const updated = await res.json();
-      setCoupons((prev) => prev.map((c) => (c.id === coupon.id ? updated : c)));
+      setCoupons((prev) => prev.map((c) => (c.id === coupon.id ? { ...updated, paidUsedCount: c.paidUsedCount } : c)));
     }
   }
 
@@ -186,7 +186,7 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
               <tr className="border-b border-[#1A1A24] bg-[#0D0D14]">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Code</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden sm:table-cell">Discount</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Uses</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden md:table-cell">Paid Uses</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider hidden lg:table-cell">Created</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider text-right">Actions</th>
@@ -203,7 +203,7 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
                       {coupon.code}
                     </span>
                     <p className="md:hidden text-xs text-[#6B7280] mt-0.5">
-                      {coupon.usedCount} / {coupon.maxUses !== null ? coupon.maxUses : "∞"} uses
+                      {coupon.paidUsedCount} paid / {coupon.maxUses !== null ? coupon.maxUses : "∞"} uses
                     </p>
                   </td>
                   <td className="px-4 py-3.5 hidden sm:table-cell">
@@ -217,7 +217,7 @@ export function CouponManager({ initialCoupons }: CouponManagerProps) {
                     </span>
                   </td>
                   <td className="px-4 py-3.5 hidden md:table-cell">
-                    <span className="text-sm text-[#F0F0F5]">{coupon.usedCount}</span>
+                    <span className="text-sm text-[#F0F0F5]">{coupon.paidUsedCount}</span>
                     {coupon.maxUses !== null && (
                       <span className="text-xs text-[#6B7280]"> / {coupon.maxUses}</span>
                     )}

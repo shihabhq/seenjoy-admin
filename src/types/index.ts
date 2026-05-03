@@ -28,6 +28,7 @@ export interface Coupon {
   value: number;
   maxUses: number | null;
   usedCount: number;
+  paidUsedCount: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
